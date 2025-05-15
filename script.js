@@ -27,18 +27,30 @@ document.addEventListener("DOMContentLoaded", () => {
       // Убираем всё, кроме цифр и запятой
       value = value.replace(/[^0-9,]/g, "");
 
-      // Если нет запятой и есть хотя бы одна цифра — добавляем её
-      if (!value.includes(",")) {
-        if (value.length === 1 && !value.startsWith(",")) {
+      // Если нет запятой, но есть хотя бы одна цифра — ставим запятую после первой цифры
+      if (!value.includes(",") && value.length >= 1) {
+        if (value.length > 1) {
+          // Оставляем только первую цифру + запятая
+          value = value[0] + ",";
+        } else {
           value = value + ",";
         }
-      } else {
-        // После запятой максимум 2 цифры
+      }
+
+      // Проверяем, есть ли запятая
+      if (value.includes(",")) {
         const parts = value.split(",");
-        if (parts[1].length > 2) {
-          parts[1] = parts[1].substring(0, 2);
+        const before = parts[0];
+        const after = parts[1];
+
+        // Разрешаем вводить максимум две цифры после запятой
+        if (after.length > 2) {
+          parts[1] = after.slice(0, 2); // Убираем лишние
           value = parts.join(",");
         }
+
+        // Объединяем обратно
+        value = `${before},${parts[1]}`;
       }
 
       // Ограничиваем длину до 5 символов (x,xx)
@@ -46,10 +58,10 @@ document.addEventListener("DOMContentLoaded", () => {
         value = value.slice(0, 5);
       }
 
-      // Сохраняем значение
+      // Сохраняем отредактированное значение
       e.target.value = value;
 
-      // Автофокус на следующее поле, если ввели 2 знака после запятой
+      // Переход к следующему полю при завершении формата x,xx
       if (value.includes(",") && value.split(",")[1].length === 2) {
         const nextInput = inputs[index + 1];
         if (nextInput) {
