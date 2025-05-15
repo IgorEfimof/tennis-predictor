@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Прогноз Теннис</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="container">
+    <h1>Прогноз победителя в настольном теннисе</h1>
+    <p>Введите коэффициенты на игроков A и B по каждому гейму.</p>
+
+    <div id="games">
+      <!-- Геймы будут добавлены через JS -->
+    </div>
+
+    <button id="predictBtn">Прогнозировать победителя</button>
+
+    <div id="result" class="result hidden">
+      <h2>Результат прогноза:</h2>
+      <p>Средний коэффициент игрока A: <span id="avgA"></span></p>
+      <p>Средний коэффициент игрока B: <span id="avgB"></span></p>
+      <p><strong>Победитель:</strong> <span id="winner"></span></p>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
