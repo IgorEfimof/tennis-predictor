@@ -9,21 +9,38 @@
 <body>
 
   <div class="container">
-    <h1>Прогноз победителя в настольном теннисе</h1>
-    <p>Введите коэффициенты на игроков A и B по каждому гейму.</p>
+    <header>
+      <h1>Прогноз победителя в настольном теннисе</h1>
+      <p>Введите коэффициенты на игроков A и B по каждому гейму.</p>
+    </header>
 
-    <div id="games">
-      <!-- Геймы будут добавлены через JS -->
-    </div>
+    <main>
+      <div class="players">
+        <div class="player">
+          <img src="https://via.placeholder.com/30x20 " alt="Флаг" />
+          <span>Игрок A</span>
+          <span class="score">0</span>
+        </div>
+        <div class="player">
+          <img src="https://via.placeholder.com/30x20 " alt="Флаг" />
+          <span>Игрок B</span>
+          <span class="score">0</span>
+        </div>
+      </div>
 
-    <button id="predictBtn">Прогнозировать победителя</button>
+      <div id="games">
+        <!-- Геймы будут добавлены через JS -->
+      </div>
 
-    <div id="result" class="result hidden">
-      <h2>Результат прогноза:</h2>
-      <p>Средний коэффициент игрока A: <span id="avgA"></span></p>
-      <p>Средний коэффициент игрока B: <span id="avgB"></span></p>
-      <p><strong>Победитель:</strong> <span id="winner"></span></p>
-    </div>
+      <button id="predictBtn">Прогнозировать победителя</button>
+
+      <div id="result" class="result hidden">
+        <h2>Результат прогноза:</h2>
+        <p>Средний коэффициент игрока A: <span id="avgA"></span></p>
+        <p>Средний коэффициент игрока B: <span id="avgB"></span></p>
+        <p><strong>Победитель:</strong> <span id="winner"></span></p>
+      </div>
+    </main>
   </div>
 
   <script src="script.js"></script>
