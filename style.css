@@ -2,6 +2,10 @@
   box-sizing: border-box;
 }
 
+html {
+  font-size: 16px;
+}
+
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: linear-gradient(to right bottom, #e0eafc, #cfdef3);
@@ -11,43 +15,65 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 1rem;
 }
 
 .container {
   background: white;
   padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  width: 100%;
   max-width: 500px;
-  width: 90%;
   text-align: center;
 }
 
 h1 {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   color: #333;
   margin-bottom: 1rem;
 }
 
-input[type="number"] {
-  width: calc(50% - 10px);
+p {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.game-input {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.game-input p {
+  font-weight: bold;
+  margin-bottom: 0.25rem;
+  font-size: 1rem;
+}
+
+input[type="text"] {
+  width: 100%;
   padding: 0.6rem;
-  margin: 0.4rem;
+  font-size: 1.1rem;
   border: 1px solid #ccc;
   border-radius: 6px;
-  font-size: 1rem;
+  text-align: center;
+  margin: 0 auto;
 }
 
 button {
   margin-top: 1rem;
   padding: 0.7rem 1.2rem;
-  font-size: 1rem;
+  font-size: 1.1rem;
   background-color: #4f46e5;
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.3s ease;
+  width: 100%;
+  max-width: 300px;
 }
 
 button:hover {
@@ -55,12 +81,13 @@ button:hover {
 }
 
 .result {
-  margin-top: 2rem;
+  margin-top: 1.5rem;
   padding: 1rem;
   background-color: #f3f4f6;
   border-left: 4px solid #4f46e5;
   border-radius: 6px;
   animation: fadeIn 0.5s ease-in-out;
+  font-size: 1rem;
 }
 
 .hidden {
@@ -70,4 +97,32 @@ button:hover {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Маленькие экраны */
+@media (max-width: 480px) {
+  .container {
+    padding: 1.2rem;
+  }
+
+  h1 {
+    font-size: 1.2rem;
+  }
+
+  .game-input p {
+    font-size: 0.95rem;
+  }
+
+  input[type="text"] {
+    font-size: 1rem;
+    padding: 0.5rem;
+  }
+
+  button {
+    font-size: 1rem;
+  }
+
+  .result {
+    font-size: 0.95rem;
+  }
 }
