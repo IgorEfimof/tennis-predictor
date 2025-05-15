@@ -22,8 +22,9 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 1rem;
+  gap: 0.5rem;
   min-height: 100vh;
+  overflow-y: auto; /* Добавляем прокрутку, если что-то выйдет за экран */
 }
 
 header {
@@ -75,7 +76,7 @@ p {
 #games {
   display: flex;
   flex-direction: column;
-  gap: 0.7rem;
+  gap: 0.5rem;
   width: 100%;
 }
 
@@ -94,8 +95,8 @@ p {
 
 .game-input input[type="text"] {
   width: 100%;
-  padding: 0.5rem;
-  font-size: 1rem;
+  padding: 0.4rem;
+  font-size: 0.95rem;
   text-align: center;
   background-color: #222;
   border: 1px solid #444;
@@ -143,7 +144,7 @@ button:hover {
 @media (max-width: 768px) {
   .container {
     padding: 0.8rem;
-    gap: 0.8rem;
+    gap: 0.5rem;
   }
 
   h1 {
@@ -163,8 +164,8 @@ button:hover {
   }
 
   .game-input input[type="text"] {
-    font-size: 0.95rem;
-    padding: 0.4rem;
+    font-size: 0.9rem;
+    padding: 0.3rem;
   }
 
   button {
@@ -175,5 +176,19 @@ button:hover {
   .result {
     font-size: 0.9rem;
     padding: 0.6rem;
+  }
+
+  /* Горизонтальная ориентация для полей ввода */
+  .game-input {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .game-input p {
+    display: none; /* Скрываем заголовки геймов */
+  }
+
+  .game-input input[type="text"] {
+    width: 48%; /* Уменьшаем ширину полей ввода */
   }
 }
