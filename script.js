@@ -13,51 +13,55 @@ document.addEventListener("DOMContentLoaded", () => {
     div.className = "game-input";
     div.innerHTML = `
       <p><strong>Гейм ${i}</strong></p>
-      <input type="text" inputmode="decimal" placeholder="Коэффициент A" data-player="a" data-id="${i}" maxlength="5">
-      <input type="text" inputmode="decimal" placeholder="Коэффициент B" data-player="b" data-id="${i}" maxlength="5">
+      <input type="text" inputmode="numeric" placeholder="Коэффициент A" data-player="a" data-id="${i}" maxlength="5">
+      <input type="text" inputmode="numeric" placeholder="Коэффициент B" data-player="b" data-id="${i}" maxlength="5">
     `;
     gamesContainer.appendChild(div);
   }
 
-  // Добавляем обработчики событий
   const inputs = document.querySelectorAll("input[type='text']");
   inputs.forEach((input, index) => {
     input.addEventListener("input", (e) => {
-      let value = e.target.value.replace(/[^0-9]/g, "");
+      let value = e.target.value;
 
-      if (value.length === 0) {
-        e.target.value = "";
-        return;
-      }
+      // Убираем всё, кроме цифр и запятой
+      value = value.replace(/[^0-9,]/g, "");
 
-      // Автоматически добавляем запятую и форматируем до 2 знаков
-      if (value.length === 1) {
-        e.target.value = value + ",";
-      } else if (value.length <= 3) {
-        const before = value.slice(0, 1);
-        const after = value.slice(1).padEnd(2, "0").slice(0, 2);
-        e.target.value = `${before},${after}`;
+      // Если нет запятой и есть хотя бы одна цифра — добавляем её
+      if (!value.includes(",")) {
+        if (value.length === 1 && !value.startsWith(",")) {
+          value = value + ",";
+        }
       } else {
-        const before = value.slice(0, -2);
-        const after = value.slice(-2);
-        e.target.value = `${before},${after}`;
+        // После запятой максимум 2 цифры
+        const parts = value.split(",");
+        if (parts[1].length > 2) {
+          parts[1] = parts[1].substring(0, 2);
+          value = parts.join(",");
+        }
       }
 
-      // Автофокус на следующее поле при вводе 2 цифр после запятой
-      const parts = e.target.value.split(",");
-      if (parts.length > 1 && parts[1].length === 2) {
+      // Ограничиваем длину до 5 символов (x,xx)
+      if (value.length > 5) {
+        value = value.slice(0, 5);
+      }
+
+      // Сохраняем значение
+      e.target.value = value;
+
+      // Автофокус на следующее поле, если ввели 2 знака после запятой
+      if (value.includes(",") && value.split(",")[1].length === 2) {
         const nextInput = inputs[index + 1];
         if (nextInput) {
           nextInput.focus();
         } else {
-          e.target.blur(); // Скрываем клавиатуру, если это последнее поле
+          e.target.blur(); // Скрываем клавиатуру на iPad
         }
       }
     });
 
-    // Позволяем очищать поле или вводить вручную
     input.addEventListener("focus", () => {
-      input.select(); // Выделение текста при фокусе
+      input.select(); // Выделяем всё при фокусе
     });
   });
 
