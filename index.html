@@ -3,8 +3,178 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Прогноз Теннис</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>Прогноз победителя в настольном теннисе</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #121212;
+      color: white;
+      width: 100%;
+      height: 100%;
+      padding: 0;
+      margin: 0;
+    }
+
+    .container {
+      max-width: 100%;
+      width: 100%;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.5rem;
+      min-height: 100vh;
+      overflow-y: auto;
+    }
+
+    header {
+      text-align: center;
+      padding: 0.5rem 0;
+    }
+
+    h1 {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-bottom: 0.3rem;
+    }
+
+    p {
+      font-size: 0.9rem;
+      color: #ccc;
+    }
+
+    .players {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      background-color: #1e1e1e;
+      border-radius: 8px;
+    }
+
+    .player {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.9rem;
+      width: 48%;
+    }
+
+    .player img {
+      width: 100%;
+      height: auto;
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+    }
+
+    .score {
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+
+    #games {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      width: 100%;
+    }
+
+    .game-input {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      gap: 0.3rem;
+      width: 100%;
+    }
+
+    .game-input input[type="text"] {
+      width: 48%;
+      padding: 0.4rem;
+      font-size: 0.95rem;
+      text-align: center;
+      background-color: #222;
+      border: 1px solid #444;
+      border-radius: 6px;
+      color: white;
+    }
+
+    button {
+      margin-top: 0.5rem;
+      padding: 0.6rem 1rem;
+      font-size: 1rem;
+      background-color: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      width: 100%;
+    }
+
+    button:hover {
+      background-color: #3730a3;
+    }
+
+    .result {
+      margin-top: 1rem;
+      padding: 0.8rem;
+      background-color: #1e1e1e;
+      border-left: 4px solid #4f46e5;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      .game-input {
+        flex-direction: row;
+      }
+
+      .player img {
+        height: 80px;
+      }
+
+      .player {
+        font-size: 0.8rem;
+      }
+
+      .score {
+        font-size: 1rem;
+      }
+
+      .game-input input[type="text"] {
+        font-size: 0.9rem;
+        padding: 0.3rem;
+      }
+
+      button {
+        font-size: 0.95rem;
+        padding: 0.5rem;
+      }
+
+      .result {
+        font-size: 0.9rem;
+        padding: 0.6rem;
+      }
+    }
+  </style>
 </head>
 <body>
 
@@ -17,20 +187,18 @@
     <main>
       <div class="players">
         <div class="player player-a">
-          <img src="images/Photoroom_20250515_221809.jpeg" alt="Игрок A" />
+          <img src="https://via.placeholder.com/150x200?text= Игрок+A" alt="Игрок A" />
           <span>Игрок A</span>
           <span class="score">0</span>
         </div>
         <div class="player player-b">
-          <img src="images/Photoroom_20250515_222050.jpeg" alt="Игрок B" />
+          <img src="https://via.placeholder.com/150x200?text= Игрок+B" alt="Игрок B" />
           <span>Игрок B</span>
           <span class="score">0</span>
         </div>
       </div>
 
-      <div id="games">
-        <!-- Геймы будут добавлены через JS -->
-      </div>
+      <div id="games"></div>
 
       <button id="predictBtn">Прогнозировать победителя</button>
 
@@ -43,6 +211,140 @@
     </main>
   </div>
 
-  <script src="script.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const gameCount = 3;
+      const gamesContainer = document.getElementById("games");
+
+      for (let i = 1; i <= gameCount; i++) {
+        const div = document.createElement("div");
+        div.className = "game-input";
+        div.innerHTML = `
+          <input type="text" inputmode="numeric" placeholder="Коэф. A" data-player="a" data-id="${i}" maxlength="5">
+          <input type="text" inputmode="numeric" placeholder="Коэф. B" data-player="b" data-id="${i}" maxlength="5">
+        `;
+        gamesContainer.appendChild(div);
+      }
+
+      const inputs = document.querySelectorAll("input[type='text']");
+      const predictBtn = document.getElementById("predictBtn");
+      const resultDiv = document.getElementById("result");
+      const avgASpan = document.getElementById("avgA");
+      const avgBSpan = document.getElementById("avgB");
+      const winnerSpan = document.getElementById("winner");
+
+      inputs.forEach((input, index) => {
+        input.addEventListener("input", (e) => {
+          let value = e.target.value.replace(/[^0-9,]/g, "");
+
+          if (!value.includes(",")) {
+            if (value.length === 1) {
+              value += ",";
+            } else if (value.length > 1) {
+              value = value[0] + ",";
+            }
+          } else {
+            const parts = value.split(",");
+            if (parts[1].length > 2) {
+              parts[1] = parts[1].substring(0, 2);
+              value = parts.join(",");
+            }
+          }
+
+          e.target.value = value;
+
+          if (value.includes(",") && value.split(",")[1].length === 2) {
+            const nextInput = inputs[index + 1];
+            if (nextInput) {
+              nextInput.focus();
+            } else {
+              e.target.blur();
+            }
+          }
+        });
+
+        input.addEventListener("focus", () => {
+          input.select();
+        });
+      });
+
+      predictBtn.addEventListener("click", () => {
+        const inputs = document.querySelectorAll("input[type='text']");
+        let valuesA = [];
+        let valuesB = [];
+
+        inputs.forEach((input) => {
+          const valueStr = input.value.replace(/,/g, ".");
+          const value = parseFloat(valueStr);
+          if (!isNaN(value)) {
+            if (input.dataset.player === "a") {
+              valuesA.push(value);
+            } else {
+              valuesB.push(value);
+            }
+          }
+        });
+
+        if (valuesA.length === 0 && valuesB.length === 0) {
+          alert("Введите хотя бы один коэффициент.");
+          return;
+        }
+
+        // Среднее значение
+        const avg = (arr) => arr.reduce((sum, val) => sum + val, 0) / arr.length;
+
+        // Тренд
+        const trend = (arr) => {
+          if (arr.length < 2) return 0;
+          return arr[arr.length - 1] - arr[0];
+        };
+
+        // Стабильность
+        const stability = (arr) => {
+          if (arr.length < 2) return 0;
+          const diffs = arr.slice(1).map((v, i) => Math.abs(v - arr[i]));
+          return diffs.reduce((sum, d) => sum + d, 0) / diffs.length;
+        };
+
+        const avgA = avg(valuesA);
+        const avgB = avg(valuesB);
+
+        const trendA = trend(valuesA);
+        const trendB = trend(valuesB);
+
+        const stableA = stability(valuesA);
+        const stableB = stability(valuesB);
+
+        // Веса факторов
+        const weightAvg = 0.5;
+        const weightTrend = 0.3;
+        const weightStability = 0.2;
+
+        const ratingA = weightAvg * avgA + weightTrend * trendA + weightStability * stableA;
+        const ratingB = weightAvg * avgB + weightTrend * trendB + weightStability * stableB;
+
+        let winner = "Ничья";
+        if (ratingA < ratingB) {
+          winner = "Игрок A";
+        } else if (ratingB < ratingA) {
+          winner = "Игрок B";
+        }
+
+        // Дополнительная проверка на падение коэффициента
+        if (trendA < -0.4 && ratingA.toFixed(2) === ratingB.toFixed(2)) {
+          winner = "Игрок A";
+        }
+        if (trendB < -0.4 && ratingA.toFixed(2) === ratingB.toFixed(2)) {
+          winner = "Игрок B";
+        }
+
+        avgASpan.textContent = avgA.toFixed(2);
+        avgBSpan.textContent = avgB.toFixed(2);
+        winnerSpan.textContent = winner;
+
+        resultDiv.classList.remove("hidden");
+      });
+    });
+  </script>
 </body>
 </html>
