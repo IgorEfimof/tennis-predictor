@@ -28,7 +28,6 @@
       padding: 1rem;
       display: flex;
       flex-direction: column;
-      justify-content: center;
       gap: 0.5rem;
       min-height: 100vh;
       overflow-y: auto;
@@ -142,6 +141,12 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
+    canvas {
+      margin-top: 1rem;
+      width: 100% !important;
+      height: 200px !important;
+    }
+
     @media (max-width: 768px) {
       .game-input {
         flex-direction: row;
@@ -187,12 +192,12 @@
     <main>
       <div class="players">
         <div class="player player-a">
-          <img src="images/Photoroom_20250515_221809.jpeg" alt="Игрок A" />
+          <img src="https://via.placeholder.com/150x200?text= Игрок+A" alt="Игрок A" />
           <span>Игрок A</span>
           <span class="score">0</span>
         </div>
         <div class="player player-b">
-          <img src="images/Photoroom_20250515_222050.jpeg" alt="Игрок B" />
+          <img src="https://via.placeholder.com/150x200?text= Игрок+B" alt="Игрок B" />
           <span>Игрок B</span>
           <span class="score">0</span>
         </div>
@@ -208,12 +213,15 @@
         <p>Средний коэффициент игрока B: <span id="avgB"></span></p>
         <p><strong>Победитель:</strong> <span id="winner"></span></p>
       </div>
+
+      <canvas id="chart"></canvas>
     </main>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js "></script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      const gameCount = 3;
+      const gameCount = 10;
       const gamesContainer = document.getElementById("games");
 
       for (let i = 1; i <= gameCount; i++) {
@@ -232,6 +240,10 @@
       const avgASpan = document.getElementById("avgA");
       const avgBSpan = document.getElementById("avgB");
       const winnerSpan = document.getElementById("winner");
+      const chartCanvas = document.getElementById("chart");
+
+      // Веса геймов (чем ближе к концу — тем важнее)
+      const weights = [0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1];
 
       inputs.forEach((input, index) => {
         input.addEventListener("input", (e) => {
@@ -268,6 +280,8 @@
         });
       });
 
+      let chartInstance = null;
+
       predictBtn.addEventListener("click", () => {
         const inputs = document.querySelectorAll("input[type='text']");
         let valuesA = [];
@@ -290,10 +304,12 @@
           return;
         }
 
-        // Среднее значение
-        const avg = (arr) => arr.reduce((sum, val) => sum + val, 0) / arr.length;
+        // Среднее с учетом весов
+        const weightedAvg = (arr, weights) => {
+          return arr.slice(0, weights.length).reduce((sum, val, i) => sum + val * weights[i], 0) / weights.reduce((a, b) => a + b, 0);
+        };
 
-        // Тренд
+        // Тренд: снижение или рост
         const trend = (arr) => {
           if (arr.length < 2) return 0;
           return arr[arr.length - 1] - arr[0];
@@ -306,8 +322,8 @@
           return diffs.reduce((sum, d) => sum + d, 0) / diffs.length;
         };
 
-        const avgA = avg(valuesA);
-        const avgB = avg(valuesB);
+        const avgA = weightedAvg(valuesA, weights);
+        const avgB = weightedAvg(valuesB, weights);
 
         const trendA = trend(valuesA);
         const trendB = trend(valuesB);
@@ -343,6 +359,43 @@
         winnerSpan.textContent = winner;
 
         resultDiv.classList.remove("hidden");
+
+        // График
+        if (chartInstance) {
+          chartInstance.destroy();
+        }
+
+        const ctx = chartCanvas.getContext('2d');
+        chartInstance = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: Array.from({ length: Math.max(valuesA.length, valuesB.length) }, (_, i) => `Гейм ${i + 1}`),
+            datasets: [
+              {
+                label: 'Игрок A',
+                data: valuesA,
+                borderColor: '#4f46e5',
+                fill: false,
+                tension: 0.3
+              },
+              {
+                label: 'Игрок B',
+                data: valuesB,
+                borderColor: '#ec4899',
+                fill: false,
+                tension: 0.3
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: false
+              }
+            }
+          }
+        });
       });
     });
   </script>
