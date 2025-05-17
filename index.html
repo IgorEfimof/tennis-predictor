@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Прогноз победителя в настольном теннисе</title>
+  <script src="https://cdn.jsdelivr.net/npm/ @tensorflow/tfjs@4.10.0"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -192,12 +193,12 @@
     <main>
       <div class="players">
         <div class="player player-a">
-          <img src="images/Photoroom_20250515_221809.jpeg" alt="Игрок A" />
+          <img src="https://via.placeholder.com/150x200?text= Игрок+A" alt="Игрок A" />
           <span>Игрок A</span>
           <span class="score">0</span>
         </div>
         <div class="player player-b">
-          <img src="images/Photoroom_20250515_222050.jpeg" alt="Игрок B" />
+          <img src="https://via.placeholder.com/150x200?text= Игрок+B" alt="Игрок B" />
           <span>Игрок B</span>
           <span class="score">0</span>
         </div>
@@ -212,15 +213,13 @@
         <p>Средний коэффициент игрока A: <span id="avgA"></span></p>
         <p>Средний коэффициент игрока B: <span id="avgB"></span></p>
         <p><strong>Победитель:</strong> <span id="winner"></span></p>
+        <p><strong>Вероятность победы:</strong> <span id="probability"></span>%</p>
       </div>
-
-      <canvas id="chart"></canvas>
     </main>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js "></script>
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", async () => {
       const gameCount = 10;
       const gamesContainer = document.getElementById("games");
 
@@ -240,10 +239,24 @@
       const avgASpan = document.getElementById("avgA");
       const avgBSpan = document.getElementById("avgB");
       const winnerSpan = document.getElementById("winner");
-      const chartCanvas = document.getElementById("chart");
+      const probabilitySpan = document.getElementById("probability");
 
       // Веса геймов (чем ближе к концу — тем важнее)
       const weights = [0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1];
+
+      // Обучение модели (простая логистическая регрессия)
+      const model = tf.sequential();
+      model.add(tf.layers.dense({ inputShape: [10], units: 1, activation: 'sigmoid' }));
+      model.compile({ optimizer: 'adam', loss: 'binaryCrossentropy', metrics: ['accuracy'] });
+
+      // Предположим, что у нас есть тренировочные данные (позже можно заменить на реальные)
+      const xs = tf.tensor2d([
+        [2.1,2.0,1.9,1.8,1.7,1.6,1.5,1.4,1.3,1.2],
+        [1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7]
+      ]);
+      const ys = tf.tensor1d([1, 0]); // 1 - A выигрывает, 0 - B выигрывает
+
+      await model.fit(xs, ys, { epochs: 50 });
 
       inputs.forEach((input, index) => {
         input.addEventListener("input", (e) => {
@@ -280,9 +293,7 @@
         });
       });
 
-      let chartInstance = null;
-
-      predictBtn.addEventListener("click", () => {
+      predictBtn.addEventListener("click", async () => {
         const inputs = document.querySelectorAll("input[type='text']");
         let valuesA = [];
         let valuesB = [];
@@ -309,13 +320,11 @@
           return arr.slice(0, weights.length).reduce((sum, val, i) => sum + val * weights[i], 0) / weights.reduce((a, b) => a + b, 0);
         };
 
-        // Тренд: снижение или рост
         const trend = (arr) => {
           if (arr.length < 2) return 0;
           return arr[arr.length - 1] - arr[0];
         };
 
-        // Стабильность
         const stability = (arr) => {
           if (arr.length < 2) return 0;
           const diffs = arr.slice(1).map((v, i) => Math.abs(v - arr[i]));
@@ -331,71 +340,28 @@
         const stableA = stability(valuesA);
         const stableB = stability(valuesB);
 
-        // Веса факторов
-        const weightAvg = 0.5;
-        const weightTrend = 0.3;
-        const weightStability = 0.2;
-
-        const ratingA = weightAvg * avgA + weightTrend * trendA + weightStability * stableA;
-        const ratingB = weightAvg * avgB + weightTrend * trendB + weightStability * stableB;
+        const ratingA = 0.5 * avgA + 0.3 * trendA + 0.2 * stableA;
+        const ratingB = 0.5 * avgB + 0.3 * trendB + 0.2 * stableB;
 
         let winner = "Ничья";
+        let probability = 50;
+
         if (ratingA < ratingB) {
           winner = "Игрок A";
+          const prediction = model.predict(tf.tensor2d([valuesA])).dataSync()[0];
+          probability = (prediction * 100).toFixed(1);
         } else if (ratingB < ratingA) {
           winner = "Игрок B";
-        }
-
-        // Дополнительная проверка на падение коэффициента
-        if (trendA < -0.4 && ratingA.toFixed(2) === ratingB.toFixed(2)) {
-          winner = "Игрок A";
-        }
-        if (trendB < -0.4 && ratingA.toFixed(2) === ratingB.toFixed(2)) {
-          winner = "Игрок B";
+          const prediction = model.predict(tf.tensor2d([valuesB])).dataSync()[0];
+          probability = ((1 - prediction) * 100).toFixed(1);
         }
 
         avgASpan.textContent = avgA.toFixed(2);
         avgBSpan.textContent = avgB.toFixed(2);
         winnerSpan.textContent = winner;
+        probabilitySpan.textContent = probability;
 
         resultDiv.classList.remove("hidden");
-
-        // График
-        if (chartInstance) {
-          chartInstance.destroy();
-        }
-
-        const ctx = chartCanvas.getContext('2d');
-        chartInstance = new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: Array.from({ length: Math.max(valuesA.length, valuesB.length) }, (_, i) => `Гейм ${i + 1}`),
-            datasets: [
-              {
-                label: 'Игрок A',
-                data: valuesA,
-                borderColor: '#4f46e5',
-                fill: false,
-                tension: 0.3
-              },
-              {
-                label: 'Игрок B',
-                data: valuesB,
-                borderColor: '#ec4899',
-                fill: false,
-                tension: 0.3
-              }
-            ]
-          },
-          options: {
-            responsive: true,
-            scales: {
-              y: {
-                beginAtZero: false
-              }
-            }
-          }
-        });
       });
     });
   </script>
