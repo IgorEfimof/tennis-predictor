@@ -194,12 +194,12 @@
     <main>
       <div class="players">
         <div class="player player-a">
-          <img src="images/Photoroom_20250515_222050.jpeg" alt="Игрок A" />
+          <img src="https://via.placeholder.com/150x200?text= Игрок+A" alt="Игрок A" />
           <span>Игрок A</span>
           <span class="score">0</span>
         </div>
         <div class="player player-b">
-          <img src="images/Photoroom_20250515_221809.jpeg" alt="Игрок B" />
+          <img src="https://via.placeholder.com/150x200?text= Игрок+B" alt="Игрок B" />
           <span>Игрок B</span>
           <span class="score">0</span>
         </div>
@@ -246,7 +246,7 @@
       const ctx = document.getElementById("chart").getContext("2d");
       let chartInstance = null;
 
-      // Создаем простую нейросеть для прогноза
+      // Создаем модель ИИ
       const createModel = () => {
         const model = tf.sequential();
         model.add(tf.layers.dense({ inputShape: [10], units: 16, activation: "relu" }));
@@ -263,11 +263,10 @@
 
       // Обучение на примерах
       const xs = tf.tensor2d([
-        [2.1,2.0,1.9,1.8,1.7,1.6,1.5,1.4,1.3,1.2],
-        [1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7]
+        [2.1, 2.0, 1.9, 1.8, 1.7, 1.6, 1.5, 1.4, 1.3, 1.2],
+        [1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7]
       ]);
       const ys = tf.tensor1d([1, 0]); // 1 - A побеждает, 0 - B побеждает
-
       await model.fit(xs, ys, { epochs: 50 });
 
       // Логика ввода
@@ -291,14 +290,13 @@
             }
           }
 
-          // Переключение поля
           const currentValue = e.target.value;
           if (currentValue.includes(",") && currentValue.split(",")[1].length === 2) {
             const nextInput = inputs[index + 1];
             if (nextInput) {
               nextInput.focus();
             } else {
-              e.target.blur(); // Скрываем клавиатуру
+              e.target.blur(); // Скрываем клавиатуру на iPad
             }
           }
         });
@@ -329,7 +327,13 @@
           return;
         }
 
-        // Функции анализа
+        // Нормализация данных для ИИ
+        const normalize = (arr) => {
+          const min = Math.min(...arr);
+          const max = Math.max(...arr);
+          return arr.map(x => (x - min) / (max - min));
+        };
+
         const trend = (arr) => arr[arr.length - 1] - arr[0];
 
         const stability = (arr) => {
@@ -337,24 +341,16 @@
           return diffs.reduce((a, b) => a + b, 0) / diffs.length;
         };
 
-        const weightedAvg = (arr, weights) =>
-          arr.slice(0, weights.length).reduce((sum, v, i) => sum + v * weights[i], 0) /
-          weights.reduce((a, b) => a + b, 0);
-
         const weights = [0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1];
+        const weightedAvg = (arr, ws) =>
+          arr.slice(0, ws.length).reduce((sum, v, i) => sum + v * ws[i], 0) /
+          ws.reduce((a, b) => a + b, 0);
 
         const avgA = weightedAvg(valuesA, weights);
         const avgB = weightedAvg(valuesB, weights);
 
         const rA = avgA + 0.3 * trend(valuesA) + 0.2 * stability(valuesA);
         const rB = avgB + 0.3 * trend(valuesB) + 0.2 * stability(valuesB);
-
-        // Прогноз от нейросети
-        const normalize = (arr) => {
-          const min = Math.min(...arr);
-          const max = Math.max(...arr);
-          return arr.map(x => (x - min) / (max - min));
-        };
 
         const predictionA = model.predict(tf.tensor2d([normalize(valuesA)])).dataSync()[0];
         const predictionB = model.predict(tf.tensor2d([normalize(valuesB)])).dataSync()[0];
@@ -373,13 +369,13 @@
         probabilitySpan.textContent = ((winner === "Игрок A" ? predictionA : predictionB) * 100).toFixed(1);
         resultDiv.classList.remove("hidden");
 
-        // График
+        // График динамики коэффициентов
         if (chartInstance) chartInstance.destroy();
 
         chartInstance = new Chart(ctx, {
           type: "line",
           data: {
-            labels: Array.from({ length: Math.max(valuesA.length, valuesB.length) }, (_, i) => `Гейм ${i + 1}`),
+            labels: Array.from({ length: gameCount }, (_, i) => `Гейм ${i + 1}`),
             datasets: [
               {
                 label: "Игрок A",
